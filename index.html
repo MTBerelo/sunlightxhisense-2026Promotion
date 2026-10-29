@@ -1,4 +1,3 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -153,11 +152,7 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
   </div>
 
   <div class="toolbar">
-    <button class="btn primary" id="saveBtn" style="display:none" onclick="saveEdit()">✓ Save</button>
-    <button class="btn" id="cancelBtn" style="display:none" onclick="cancelEdit()">✕ Cancel</button>
     <button class="btn" id="printBtn" onclick="window.print()">🖨️ Print</button>
-    <span class="edit-badge" id="editBadge" style="display:none">Editing, charts update live</span>
-    <span class="saved-note" id="savedNote"></span>
   </div>
 
   <div class="metrics" id="metrics"></div>
@@ -177,7 +172,6 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
         <thead><tr><th>Week</th><th>Dates</th><th class="n">New registrations</th><th class="n">Total registrations</th><th class="n">Coupons issued</th><th class="n">Redemptions</th><th class="n">Total redemptions</th><th class="n">Redemption rate</th></tr></thead>
         <tbody id="weekBody"></tbody>
       </table></div>
-      <button class="btn add-row edit-only" onclick="addWeek()">＋ Add week</button>
       <p class="note">Weeks run Wednesday to Tuesday from launch on 23.September.2026. Redemption rate is total redemptions to date divided by total coupons issued to date. Test entries are included in registrations and counted as invalid.</p>
     </div>
     <div class="card" style="margin-bottom:14px">
@@ -200,7 +194,7 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
     <div class="card" style="margin-bottom:14px">
       <h3>Top 5 Hisense models, valid purchases per model</h3>
       <div style="position:relative;height:300px"><canvas id="modelChart"></canvas></div>
-      <p class="note">Valid purchases only (till slip verified and coupon sent).</p>
+      <p class="note">Valid purchases only (till slip verified and coupon sent). 3 valid Top Loaders came through without a model number and are left out until it is captured.</p>
     </div>
     <div class="card">
       <h3>Coupons issued and redeemed, by coupon</h3>
@@ -231,7 +225,6 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
         <thead><tr><th>Retailer</th><th>Registrations</th><th>Share</th><th>Volume</th><th></th></tr></thead>
         <tbody id="retailerBody"></tbody>
       </table></div>
-      <button class="btn add-row edit-only" onclick="addRetailer()">＋ Add retailer</button>
     </div>
     <div class="card" style="margin-bottom:14px" id="modelEditCard">
       <h3>Hisense models</h3>
@@ -239,12 +232,10 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
         <thead><tr><th>Model · Type · Capacity · Bundle</th><th>Units</th><th></th></tr></thead>
         <tbody id="modelBody"></tbody>
       </table></div>
-      <button class="btn add-row edit-only" onclick="addModel()">＋ Add model</button>
     </div>
     <div class="card">
       <h3>Top salespeople</h3>
       <div class="sp-grid" id="spGrid"></div>
-      <button class="btn add-row edit-only" onclick="addSp()">＋ Add salesperson</button>
     </div>
   </div>
 
@@ -278,40 +269,43 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
 
 <script>
 // ── Default data ─────────────────────────────────────────────────────────
-// Source: Hisense SAC cleaned export, 21 Oct 2026 (registrations 24 Sep to 21 Oct)
-// Redemptions: Checkers/Shoprite Centralized Coupon Reports RM0080598 (Auto Liquid) and RM0080669 (Auto Powder), refreshed 21 Oct
-// Liquid: 6 live redemptions (1 Oct HX Eastgate, 5 Oct SM Gamalakhe, 10 Oct CH Pavillion Hyper, 13 Oct SO Quagga Centre, 13 Oct SS Dawn Park, 16 Oct CX Queensburgh)
-// Powder: 1 live redemption (20 Oct CX Monavoni). 16 and 17 Sep Blubird Melrose redemptions are pre launch tests
-// Pick n Pay Auto Powder: 3 redemptions as supplied by Berelo, dates not yet confirmed (placed in Week 4)
-// Test entries excluded (Testing tag, connect-mobile and test addresses). Valid = tagged Coupon sent (34)
-// Under review = untagged, HIRSCH INVOICE, or Valid til slip without coupon sent (19). Invalid = all other tags (23)
-// Coupons issued: valid entries by preferred retailer; Top Loader = Auto Powder, Front Loader and Dryer Washer Combo = Auto Liquid
+// Source: SAC cleaned export ClientID-1525, 28 Oct 2026 (112 entries, 24 Sep to 28 Oct)
+// Total registrations match SAC; the 10 test entries are counted as invalid
+// Valid = tagged Coupon sent (46). Under review = HIRSCH INVOICE (18), Valid til slip awaiting coupon (2), untagged (8)
+// Invalid = 28 rejected tags + 10 tests. Model / preferred retailer backfilled from the 21 Oct export where the cleaned file lost them
+// 3 valid entries from 22 to 24 Oct (Phemelo OK Furniture, Winnie HNN, Octavious HiFi) have no model or preferred retailer captured
+// Coupons issued: valid entries by preferred retailer, Dis-Chem excluded, 3 entries with no preferred retailer excluded until captured
+// Redemptions: Checkers/Shoprite coupon reports as at 28 Oct (Liquid 8, Powder 1; pre launch Blubird Melrose tests excluded) and Pick n Pay powder 3 (supplied by Berelo)
+// Liquid added 21 Oct CC Gillitts and 22 Oct CS Scottburgh
 const DEFAULT = {
-  updated: '21.October.2026',
+  updated: '28.October.2026',
   liveDates: '23.September.2026 to 30.November.2026',
   expiry: '31.December.2026',
   status: 'Campaign in progress',
-  totalReg: 86,      // all entries as per SAC, 21 Oct; the 10 test entries are counted as invalid
-  validReg: 34,      // tagged Valid til slip | Coupon sent
-  reviewReg: 19,     // 16 Hirsch invoice + 2 valid slip awaiting coupon + 1 untagged; 33 invalid incl. 10 test (calculated)
+  totalReg: 112,     // all SAC entries; 10 test entries counted as invalid
+  validReg: 46,      // tagged Valid til slip | Coupon sent
+  reviewReg: 28,     // 18 Hirsch invoice + 2 valid slip awaiting coupon + 8 untagged; 38 invalid incl. 10 test (calculated)
   activeRetailers: 4,
   retailers: [
-    { name: 'HiFi Corp',      reg: 23 },
-    { name: "Hirsch's",       reg: 19 },
-    { name: 'House and Home', reg: 6 },
-    { name: 'OK Furniture',   reg: 17 }
+    { name: 'HiFi Corp',      reg: 30 },
+    { name: "Hirsch's",       reg: 22 },
+    { name: 'House and Home', reg: 10 },
+    { name: 'OK Furniture',   reg: 25 }
   ],
-  // valid purchases only (34)
+  // valid purchases only (46)
   models: [
-    { label: 'WT3K1423UB · Top Loader',          units: 15 },
+    { label: 'WT3K1423UB · Top Loader',          units: 19 },
+    { label: 'WF1I9022BK · Front Loader',        units: 5 },
     { label: 'WF1I8022BT · Front Loader',        units: 4 },
+    { label: 'WTJA1112T · Top Loader',           units: 3 },
     { label: 'WT3W1622UB · Top Loader',          units: 3 },
     { label: 'WF5S1245BB · Front Loader',        units: 3 },
-    { label: 'WF1I9022BK · Front Loader',        units: 3 },
-    { label: 'WTJA1112T · Top Loader',           units: 2 },
     { label: 'WD5S1245BB · Dryer Washer Combo',  units: 2 },
+    { label: 'WFQP9012VMT · Front Loader',       units: 1 },
+    { label: 'WT3I1923UB · Top Loader',          units: 1 },
     { label: 'WF3S1042BB · Front Loader',        units: 1 },
-    { label: 'WD3Q8043BT · Dryer Washer Combo',  units: 1 }
+    { label: 'WD3Q8043BT · Dryer Washer Combo',  units: 1 },
+    { label: 'Top Loader · model not captured',  units: 3 }
   ],
   bundles: [
     { name: 'Top Loader coupon',   desc: '2× 2kg Sunlight Auto Powder' },
@@ -319,53 +313,61 @@ const DEFAULT = {
   ],
   coupons: [
     { retailer: 'Checkers / Shoprite', rows: [
-      { label: 'Auto Powder 2× 2kg',  i: 13, r: 1 },
-      { label: 'Auto Liquid 2× 1.5L', i: 10, r: 6 } ] },
+      { label: 'Auto Powder 2× 2kg',  i: 16, r: 1 },
+      { label: 'Auto Liquid 2× 1.5L', i: 11, r: 8 } ] },
     { retailer: 'Pick n Pay', rows: [
-      { label: 'Auto Powder 2× 2kg',  i: 6, r: 3 },
-      { label: 'Auto Liquid 2× 1.5L', i: 2, r: 0 } ] }
+      { label: 'Auto Powder 2× 2kg',  i: 8, r: 3 },
+      { label: 'Auto Liquid 2× 1.5L', i: 4, r: 0 } ] }
   ],
-  // Dis-Chem removed from the report at Berelo's request (3 coupons: 29 Sep, 6 Oct, 17 Oct)
-  // Weekly summary (weeks start Wednesday 23 Sep). Issued counted by registration week of valid entries.
+  // Dis-Chem removed from the report at Berelo's request
+  // Weekly summary (weeks start Wednesday 23 Sep). Registrations include tests. Issued counted by registration week of valid entries.
   weeks: [
     { name: 'Week 1', dates: '23.September to 29.September', reg: 10, issued: 3,  redeemed: 0 },
     { name: 'Week 2', dates: '30.September to 6.October',    reg: 30, issued: 12, redeemed: 2 },
     { name: 'Week 3', dates: '7.October to 13.October',      reg: 18, issued: 9,  redeemed: 3 },
     { name: 'Week 4', dates: '14.October to 20.October',     reg: 27, issued: 7,  redeemed: 5 },
-    { name: 'Week 5', dates: '21.October to 27.October',     reg: 1,  issued: 0,  redeemed: 0, current: true }
+    { name: 'Week 5', dates: '21.October to 27.October',     reg: 26, issued: 8,  redeemed: 2 },
+    { name: 'Week 6', dates: '28.October to 3.November',     reg: 1,  issued: 0,  redeemed: 0, current: true }
   ],
   // Valid machines per store by type
   stores: [
-    { name: 'HiFi Corp',      tl: 9, fl: 7, dwc: 0, best: 'WT3K1423UB Top Loader', bestUnits: 9 },
-    { name: 'OK Furniture',   tl: 9, fl: 0, dwc: 0, best: 'WT3K1423UB Top Loader', bestUnits: 4 },
-    { name: 'House and Home', tl: 1, fl: 4, dwc: 1, best: 'WF5S1245BB Front Loader', bestUnits: 3 },
-    { name: "Hirsch's",       tl: 0, fl: 0, dwc: 1, best: 'WD5S1245BB Dryer Washer Combo', bestUnits: 1 },
-    { name: 'Other stores',   tl: 1, fl: 0, dwc: 1, best: 'Even split', bestUnits: 1 }
+    { name: 'HiFi Corp',      tl: 13, fl: 9, dwc: 0, best: 'WT3K1423UB Top Loader', bestUnits: 11 },
+    { name: 'OK Furniture',   tl: 12, fl: 0, dwc: 0, best: 'WT3K1423UB Top Loader', bestUnits: 5 },
+    { name: 'House and Home', tl: 3,  fl: 5, dwc: 1, best: 'WF5S1245BB Front Loader', bestUnits: 3 },
+    { name: "Hirsch's",       tl: 0,  fl: 0, dwc: 1, best: 'WD5S1245BB Dryer Washer Combo', bestUnits: 1 },
+    { name: 'Other stores',   tl: 1,  fl: 0, dwc: 1, best: 'Even split', bestUnits: 1 }
   ],
   // Valid units per machine by store (Other = 1 Pick n Pay, 1 Hisense Canal Walk)
   modelStores: [
-    { model: 'WT3K1423UB', type: 'Top Loader',         hifi: 9, ok: 4, hir: 0, hnn: 1, oth: 1 },
-    { model: 'WF1I8022BT', type: 'Front Loader',       hifi: 4, ok: 0, hir: 0, hnn: 0, oth: 0 },
-    { model: 'WT3W1622UB', type: 'Top Loader',         hifi: 0, ok: 3, hir: 0, hnn: 0, oth: 0 },
-    { model: 'WF5S1245BB', type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 3, oth: 0 },
-    { model: 'WF1I9022BK', type: 'Front Loader',       hifi: 3, ok: 0, hir: 0, hnn: 0, oth: 0 },
-    { model: 'WTJA1112T',  type: 'Top Loader',         hifi: 0, ok: 2, hir: 0, hnn: 0, oth: 0 },
-    { model: 'WD5S1245BB', type: 'Dryer Washer Combo', hifi: 0, ok: 0, hir: 1, hnn: 0, oth: 1 },
-    { model: 'WF3S1042BB', type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0 },
-    { model: 'WD3Q8043BT', type: 'Dryer Washer Combo', hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0 }
+    { model: 'WT3K1423UB',  type: 'Top Loader',         hifi: 11, ok: 5, hir: 0, hnn: 2, oth: 1 },
+    { model: 'WF1I9022BK',  type: 'Front Loader',       hifi: 5, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WF1I8022BT',  type: 'Front Loader',       hifi: 4, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WTJA1112T',   type: 'Top Loader',         hifi: 0, ok: 3, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WT3W1622UB',  type: 'Top Loader',         hifi: 0, ok: 3, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WF5S1245BB',  type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 3, oth: 0 },
+    { model: 'WD5S1245BB',  type: 'Dryer Washer Combo', hifi: 0, ok: 0, hir: 1, hnn: 0, oth: 1 },
+    { model: 'WFQP9012VMT', type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0 },
+    { model: 'WT3I1923UB',  type: 'Top Loader',         hifi: 1, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WF3S1042BB',  type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0 },
+    { model: 'WD3Q8043BT',  type: 'Dryer Washer Combo', hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0 },
+    { model: 'Model not captured', type: 'Top Loader',  hifi: 1, ok: 1, hir: 0, hnn: 1, oth: 0 }
   ],
-  // Reminder 1: Checkers redemptions before 16 Oct (5) and from 16 Oct (2); Pick n Pay excluded until dates confirmed
+  // Reminder 1: Checkers redemptions before 16 Oct (5) and from 16 Oct (4); Pick n Pay excluded until dates confirmed
   reminders: [
-    { name: 'Reminder 1', date: '16.October.2026',  before: 5, after: 2 },
-    { name: 'Reminder 2', date: '25.October.2026',  before: null, after: null },
+    { name: 'Reminder 1', date: '16.October.2026',  before: 5, after: 4 },
+    { name: 'Reminder 2', date: '30.October.2026',  before: null, after: null },
     { name: 'Reminder 3', date: '15.November.2026', before: null, after: null },
     { name: 'Reminder 4', date: '4.December.2026',  before: null, after: null }
   ],
   // Salespeople named on valid purchases only
   salespeople: [
+    { name: 'Olgar (HiFi Corp)',          sales: 2 },
     { name: 'Oryan (HiFi Corp)',          sales: 2 },
     { name: 'Nokubonga (OK Furniture)',   sales: 2 },
-    { name: 'Olgar (HiFi Corp)',          sales: 1 },
+    { name: 'Phemelo (OK Furniture)',     sales: 2 },
+    { name: 'Sibusiso (HiFi Corp)',       sales: 1 },
+    { name: 'Octavious (HiFi Corp)',      sales: 1 },
+    { name: 'Kevin (HiFi Corp)',          sales: 1 },
     { name: 'Ntombifuthi (HiFi Corp)',    sales: 1 },
     { name: 'Muduwelo (HiFi Corp)',       sales: 1 },
     { name: 'Noloyiso (HiFi Corp)',       sales: 1 },
@@ -375,7 +377,8 @@ const DEFAULT = {
     { name: 'Amanda (OK Furniture)',      sales: 1 },
     { name: 'Silosini (OK Furniture)',    sales: 1 },
     { name: 'Moureen (OK Furniture)',     sales: 1 },
-    { name: 'Phemelo (OK Furniture)',     sales: 1 },
+    { name: 'Winnie (House and Home)',    sales: 1 },
+    { name: 'Andre (House and Home)',     sales: 1 },
     { name: 'Sonwabile (House and Home)', sales: 1 },
     { name: 'Obakeng (House and Home)',   sales: 1 },
     { name: 'Nosipho (House and Home)',   sales: 1 },
@@ -385,22 +388,11 @@ const DEFAULT = {
   ]
 };
 
-const STORE_KEY = 'sunlight-hisense-report-v26';
-let D, snapshot = null, editMode = false;
+let D;
+const editMode = false;
 
 function load() {
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    if (raw) {
-      D = JSON.parse(raw);
-      return true;
-    }
-  } catch (e) {}
   D = JSON.parse(JSON.stringify(DEFAULT));
-  return false;
-}
-function persist() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(D)); return true; } catch (e) { return false; }
 }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const int = v => Math.max(0, parseInt(v) || 0);
@@ -846,24 +838,7 @@ function refreshDerived() {
 function renderAll() {
   renderHeader(); renderMetrics(); renderRetailers(); renderModels(); renderSp();
   renderBundles(); renderCoupons(); renderReminders(); renderWeeks(); renderStores(); renderModelStores(); renderNote(); updateCharts();
-  document.querySelectorAll('.edit-only').forEach(el => el.style.display = editMode ? '' : 'none');
 }
-
-// ── Edit mode ─────────────────────────────────────────────────────────────
-function setToolbar() {
-  document.getElementById('editBtn').style.display   = editMode ? 'none' : '';
-  document.getElementById('printBtn').style.display  = editMode ? 'none' : '';
-  document.getElementById('saveBtn').style.display   = editMode ? '' : 'none';
-  document.getElementById('cancelBtn').style.display = editMode ? '' : 'none';
-  document.getElementById('editBadge').style.display = editMode ? '' : 'none';
-}
-function startEdit() { snapshot = JSON.stringify(D); editMode = true; setToolbar(); renderAll(); }
-function saveEdit() {
-  editMode = false; setToolbar(); renderAll();
-  document.getElementById('savedNote').textContent = persist()
-    ? 'Saved in this browser' : 'Could not save in this browser, changes last until you close the page';
-}
-function cancelEdit() { D = JSON.parse(snapshot); editMode = false; setToolbar(); renderAll(); }
 
 function showTab(name, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
@@ -872,11 +847,10 @@ function showTab(name, btn) {
   btn.classList.add('active');
 }
 
-const hadSaved = load();
+load();
 makeCharts();
 makeWeekStoreCharts();
 renderAll();
-if (hadSaved) document.getElementById('savedNote').textContent = 'Showing your saved figures';
 </script>
 </body>
 </html>
