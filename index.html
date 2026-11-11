@@ -194,7 +194,7 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
     <div class="card" style="margin-bottom:14px">
       <h3>Top 5 Hisense models, valid purchases per model</h3>
       <div style="position:relative;height:300px"><canvas id="modelChart"></canvas></div>
-      <p class="note">Valid purchases only (till slip verified and coupon sent). 8 valid Top Loaders came through without a model number and are left out until it is captured.</p>
+      <p class="note">Valid purchases only (till slip verified and coupon sent). 13 valid entries came through without a model number and are left out until it is captured.</p>
     </div>
     <div class="card">
       <h3>Coupons issued and redeemed, by coupon</h3>
@@ -260,7 +260,7 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
         <thead><tr><th>Reminder</th><th>Date sent</th><th>Redemptions before reminder</th><th>Redemptions after reminder</th><th>Total redemptions</th></tr></thead>
         <tbody id="reminderBody"></tbody>
       </table></div>
-      <p class="note">Highlighted cells are still to be filled in as reminder results become available. Reminder 1 counts Checkers/Shoprite redemptions only; the 3 Pick n Pay redemptions will be added once their dates are confirmed. Reminder 2 (sent Friday 30 October) before count is the 9 Checkers/Shoprite redemptions recorded up to 28 October; the after count of 0 reflects the reports received so far and will be updated when the next coupon reports arrive.</p>
+      <p class="note">Highlighted cells are still to be filled in as reminder results become available. Reminder 1 counts Checkers/Shoprite redemptions only; the 3 Pick n Pay redemptions will be added once their dates are confirmed. Reminder 2 (sent Friday 30 October) before count is the 9 Checkers/Shoprite redemptions recorded up to 28 October; the after count of 1 (Auto Powder, SO Mogwase, 8 November) reflects the reports received so far; liquid will be added when the next liquid report arrives.</p>
     </div>
   </div>
 
@@ -269,125 +269,146 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
 
 <script>
 // ── Default data ─────────────────────────────────────────────────────────
-// Source: SAC cleaned export ClientID-1525, 5 Nov 2026 (146 entries, 24 Sep to 5 Nov)
-// Total registrations match SAC; the 10 test entries (8 tagged Testing + 2 blank 2 Oct entries) are counted as invalid
-// Valid = tagged Coupon sent (64). Under review = HIRSCH INVOICE (24), Valid til slip awaiting coupon (2), untagged (5)
-// Invalid = 49 rejected tags (incl 8 Testing) + 2 blank tests. Retailer table excludes test entries
-// Model / preferred retailer for older valid entries carried over from the 28 Oct report where the cleaned file lost them
-// 8 valid entries have no model or preferred retailer captured (Octavious, Phemelo 22 Oct, Winnie, plus 28 Oct to 3 Nov: Olgar x3, Karabo, Ms Moleko)
-// Coupons issued: valid entries by preferred retailer, Dis-Chem excluded, entries with no preferred retailer excluded until captured. Dryer Washer Combo counted with the liquid coupon
-// Redemptions: Checkers/Shoprite powder 1 confirmed by RM0080669 Centralized Coupon Report (Monavoni 20 Oct; Blubird Melrose 17 Sep pre launch test excluded). Liquid 8 and Pick n Pay powder 3 as at 28 Oct, no newer reports supplied
+// Source: SAC cleaned export ClientID-1525, 10 Nov 2026 (160 entries, 24 Sep to 9 Nov)
+// Total registrations match SAC; the 10 test entries are counted as invalid
+// Valid = tagged Coupon sent (76). Under review = HIRSCH INVOICE, Valid til slip awaiting coupon, untagged (30)
+// Invalid = 44 rejected tags + 10 tests. Model / preferred retailer backfilled from earlier exports where the cleaned file lost them
+// 13 valid entries (22 Oct to 8 Nov) have no model or preferred retailer captured: left out of coupons issued and model tables until captured
+// Coupons issued: valid entries by preferred retailer, Dis-Chem excluded
+// Redemptions: Checkers/Shoprite powder 2 confirmed to 11 Nov (Monavoni 20 Oct, SO Mogwase 8 Nov; Blubird Melrose pre launch test excluded). Liquid 8 and Pick n Pay powder 3 as at 28 Oct, no newer reports supplied
 const DEFAULT = {
-  updated: '5.November.2026',
+  updated: '10.November.2026',
   liveDates: '23.September.2026 to 30.November.2026',
   expiry: '31.December.2026',
   status: 'Campaign in progress',
-  totalReg: 146,
-  validReg: 64,
-  reviewReg: 31,
+  totalReg: 160,     // all SAC entries; 10 test entries counted as invalid
+  validReg: 76,      // tagged Valid til slip | Coupon sent
+  reviewReg: 30,     // Hirsch invoice, valid slip awaiting coupon, untagged; 54 invalid incl. 10 test (calculated)
   activeRetailers: 4,
   retailers: [
-    {name: "HiFi Corp", reg: 45},
-    {name: "Hirsch's", reg: 27},
-    {name: "House and Home", reg: 13},
-    {name: "OK Furniture", reg: 35}
+    { name: 'HiFi Corp',      reg: 53 },
+    { name: "Hirsch's",       reg: 30 },
+    { name: 'House and Home', reg: 13 },
+    { name: 'OK Furniture',   reg: 38 }
   ],
-  // valid purchases only (64)
+  // valid purchases only (76)
   models: [
-    {label: "WT3K1423UB · Top Loader", units: 21},
-    {label: "WF1I8022BT · Front Loader", units: 7},
-    {label: "WF1I9022BK · Front Loader", units: 5},
-    {label: "WT3W1622UB · Top Loader", units: 5},
-    {label: "WTJA1112T · Top Loader", units: 5},
-    {label: "WF5S1245BB · Front Loader", units: 3},
-    {label: "WT7I2225DB · Top Loader", units: 3},
-    {label: "WD5S1245BB · Dryer Washer Combo", units: 2},
-    {label: "WF3S1042BB · Front Loader", units: 2},
-    {label: "WD3Q8043BT · Dryer Washer Combo", units: 1},
-    {label: "WFQP9012VMT · Front Loader", units: 1},
-    {label: "WT3I1923UB · Top Loader", units: 1},
-    {label: "Top Loader · model not captured", units: 8}
+    { label: 'WT3K1423UB · Top Loader',          units: 23 },
+    { label: 'WF1I8022BT · Front Loader',        units: 7 },
+    { label: 'WT3W1622UB · Top Loader',          units: 6 },
+    { label: 'WTJA1112T · Top Loader',           units: 5 },
+    { label: 'WF1I9022BK · Front Loader',        units: 5 },
+    { label: 'WT7I2225DB · Top Loader',          units: 3 },
+    { label: 'WF5S1245BB · Front Loader',        units: 3 },
+    { label: 'WF1I6022BT · Front Loader',        units: 2 },
+    { label: 'WFQP9012VMT · Front Loader',       units: 2 },
+    { label: 'WF3S1042BB · Front Loader',        units: 2 },
+    { label: 'WD5S1245BB · Dryer Washer Combo',  units: 2 },
+    { label: 'WT3I1823UB · Top Loader',          units: 1 },
+    { label: 'WT3I1923UB · Top Loader',          units: 1 },
+    { label: 'WD3Q8043BT · Dryer Washer Combo',  units: 1 },
+    { label: 'Top Loader · model not captured',  units: 12 },
+    { label: 'Front Loader · model not captured', units: 1 }
   ],
   bundles: [
     { name: 'Top Loader coupon',   desc: '2× 2kg Sunlight Auto Powder' },
     { name: 'Front Loader coupon', desc: '2× 1.5L Sunlight Auto Liquid' }
   ],
-  coupons: [{retailer: "Checkers / Shoprite", rows: [{label: "Auto Powder 2× 2kg", i: 23, r: 1}, {label: "Auto Liquid 2× 1.5L", i: 15, r: 8}]}, {retailer: "Pick n Pay", rows: [{label: "Auto Powder 2× 2kg", i: 10, r: 3}, {label: "Auto Liquid 2× 1.5L", i: 4, r: 0}]}],
+  coupons: [
+    { retailer: 'Checkers / Shoprite', rows: [
+      { label: 'Auto Powder 2× 2kg',  i: 26, r: 2 },
+      { label: 'Auto Liquid 2× 1.5L', i: 17, r: 8 } ] },
+    { retailer: 'Pick n Pay', rows: [
+      { label: 'Auto Powder 2× 2kg',  i: 11, r: 3 },
+      { label: 'Auto Liquid 2× 1.5L', i: 4, r: 0 } ] }
+  ],
   // Dis-Chem removed from the report at Berelo's request
+  // Weekly summary (weeks start Wednesday 23 Sep). Registrations include tests. Issued counted by registration week of valid entries.
   weeks: [
-    {name: "Week 1", dates: "23.September to 29.September", reg: 10, issued: 3, redeemed: 0},
-    {name: "Week 2", dates: "30.September to 6.October", reg: 30, issued: 12, redeemed: 2},
-    {name: "Week 3", dates: "7.October to 13.October", reg: 18, issued: 9, redeemed: 3},
-    {name: "Week 4", dates: "14.October to 20.October", reg: 27, issued: 7, redeemed: 5},
-    {name: "Week 5", dates: "21.October to 27.October", reg: 26, issued: 9, redeemed: 2},
-    {name: "Week 6", dates: "28.October to 3.November", reg: 30, issued: 12, redeemed: 0},
-    {name: "Week 7", dates: "4.November to 10.November", reg: 5, issued: 0, redeemed: 0, current: true}
+    { name: 'Week 1', dates: '23.September to 29.September', reg: 10, issued: 3,  redeemed: 0 },
+    { name: 'Week 2', dates: '30.September to 6.October',    reg: 30, issued: 12, redeemed: 2 },
+    { name: 'Week 3', dates: '7.October to 13.October',      reg: 18, issued: 9,  redeemed: 3 },
+    { name: 'Week 4', dates: '14.October to 20.October',     reg: 27, issued: 7,  redeemed: 5 },
+    { name: 'Week 5', dates: '21.October to 27.October',     reg: 26, issued: 9,  redeemed: 2 },
+    { name: 'Week 6', dates: '28.October to 3.November',     reg: 30, issued: 12, redeemed: 0 },
+    { name: 'Week 7', dates: '4.November to 10.November',    reg: 19, issued: 6,  redeemed: 1, current: true }
   ],
+  // Valid machines per store by type
   stores: [
-    {name: "HiFi Corp", tl: 20, fl: 12, dwc: 0, best: "WT3K1423UB Top Loader", bestUnits: 12},
-    {name: "OK Furniture", tl: 19, fl: 0, dwc: 0, best: "WT3K1423UB Top Loader", bestUnits: 6},
-    {name: "House and Home", tl: 3, fl: 6, dwc: 1, best: "WF5S1245BB Front Loader", bestUnits: 3},
-    {name: "Hirsch's", tl: 0, fl: 0, dwc: 1, best: "WD5S1245BB Dryer Washer Combo", bestUnits: 1},
-    {name: "Other stores", tl: 1, fl: 0, dwc: 1, best: "Even split", bestUnits: 1}
+    { name: 'HiFi Corp',      tl: 26, fl: 15, dwc: 0, best: 'WT3K1423UB Top Loader', bestUnits: 14 },
+    { name: 'OK Furniture',   tl: 21, fl: 0,  dwc: 0, best: 'WT3K1423UB and WT3W1622UB Top Loaders', bestUnits: 6 },
+    { name: 'House and Home', tl: 3,  fl: 7,  dwc: 1, best: 'WF5S1245BB Front Loader', bestUnits: 3 },
+    { name: "Hirsch's",       tl: 0,  fl: 0,  dwc: 1, best: 'WD5S1245BB Dryer Washer Combo', bestUnits: 1 },
+    { name: 'Other stores',   tl: 1,  fl: 0,  dwc: 1, best: 'Even split', bestUnits: 1 }
   ],
+  // Valid units per machine by store (Other = 1 Pick n Pay, 1 Hisense Canal Walk)
   modelStores: [
-    {model: "WT3K1423UB", type: "Top Loader", hifi: 12, ok: 6, hir: 0, hnn: 2, oth: 1},
-    {model: "Model not captured", type: "Top Loader", hifi: 4, ok: 3, hir: 0, hnn: 1, oth: 0},
-    {model: "WF1I8022BT", type: "Front Loader", hifi: 7, ok: 0, hir: 0, hnn: 0, oth: 0},
-    {model: "WF1I9022BK", type: "Front Loader", hifi: 5, ok: 0, hir: 0, hnn: 0, oth: 0},
-    {model: "WT3W1622UB", type: "Top Loader", hifi: 0, ok: 5, hir: 0, hnn: 0, oth: 0},
-    {model: "WTJA1112T", type: "Top Loader", hifi: 0, ok: 5, hir: 0, hnn: 0, oth: 0},
-    {model: "WF5S1245BB", type: "Front Loader", hifi: 0, ok: 0, hir: 0, hnn: 3, oth: 0},
-    {model: "WT7I2225DB", type: "Top Loader", hifi: 3, ok: 0, hir: 0, hnn: 0, oth: 0},
-    {model: "WD5S1245BB", type: "Dryer Washer Combo", hifi: 0, ok: 0, hir: 1, hnn: 0, oth: 1},
-    {model: "WF3S1042BB", type: "Front Loader", hifi: 0, ok: 0, hir: 0, hnn: 2, oth: 0},
-    {model: "WD3Q8043BT", type: "Dryer Washer Combo", hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0},
-    {model: "WT3I1923UB", type: "Top Loader", hifi: 1, ok: 0, hir: 0, hnn: 0, oth: 0},
-    {model: "WFQP9012VMT", type: "Front Loader", hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0}
+    { model: 'WT3K1423UB',  type: 'Top Loader',         hifi: 14, ok: 6, hir: 0, hnn: 2, oth: 1 },
+    { model: 'WF1I8022BT',  type: 'Front Loader',       hifi: 7, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WT3W1622UB',  type: 'Top Loader',         hifi: 0, ok: 6, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WTJA1112T',   type: 'Top Loader',         hifi: 0, ok: 5, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WF1I9022BK',  type: 'Front Loader',       hifi: 5, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WT7I2225DB',  type: 'Top Loader',         hifi: 3, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WF5S1245BB',  type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 3, oth: 0 },
+    { model: 'WF1I6022BT',  type: 'Front Loader',       hifi: 2, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WFQP9012VMT', type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 2, oth: 0 },
+    { model: 'WF3S1042BB',  type: 'Front Loader',       hifi: 0, ok: 0, hir: 0, hnn: 2, oth: 0 },
+    { model: 'WD5S1245BB',  type: 'Dryer Washer Combo', hifi: 0, ok: 0, hir: 1, hnn: 0, oth: 1 },
+    { model: 'WT3I1823UB',  type: 'Top Loader',         hifi: 1, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WT3I1923UB',  type: 'Top Loader',         hifi: 1, ok: 0, hir: 0, hnn: 0, oth: 0 },
+    { model: 'WD3Q8043BT',  type: 'Dryer Washer Combo', hifi: 0, ok: 0, hir: 0, hnn: 1, oth: 0 },
+    { model: 'Model not captured', type: 'Top Loader',  hifi: 7, ok: 4, hir: 0, hnn: 1, oth: 0 },
+    { model: 'Model not captured', type: 'Front Loader', hifi: 1, ok: 0, hir: 0, hnn: 0, oth: 0 }
   ],
+  // Reminder 1: Checkers redemptions before 16 Oct (5) and from 16 Oct (4); Pick n Pay excluded until dates confirmed
   reminders: [
     { name: 'Reminder 1', date: '16.October.2026',  before: 5, after: 4 },
-    { name: 'Reminder 2', date: '30.October.2026',  before: 9, after: 0 },
-    { name: 'Reminder 3', date: '15.November.2026', before: null, after: null },
+    { name: 'Reminder 2', date: '30.October.2026',  before: 9, after: 1 },
+    { name: 'Reminder 3', date: '13.November.2026', before: null, after: null },
     { name: 'Reminder 4', date: '4.December.2026',  before: null, after: null }
   ],
   // Salespeople named on valid purchases only
   salespeople: [
-    {name: "Olgar (HiFi Corp)", sales: 5},
-    {name: "Nokubonga (OK Furniture)", sales: 2},
-    {name: "Oryan (HiFi Corp)", sales: 2},
-    {name: "Phemelo (OK Furniture)", sales: 2},
-    {name: "Amanda (OK Furniture)", sales: 1},
-    {name: "Andre (House and Home)", sales: 1},
-    {name: "Angelo (House and Home)", sales: 1},
-    {name: "Antino (HiFi Corp)", sales: 1},
-    {name: "Azwi (House and Home)", sales: 1},
-    {name: "Godfrey (OK Furniture)", sales: 1},
-    {name: "Julian (Hisense Canal Walk)", sales: 1},
-    {name: "Karabo (OK Furniture)", sales: 1},
-    {name: "Kevin (HiFi Corp)", sales: 1},
-    {name: "Lungelo (HiFi Corp)", sales: 1},
-    {name: "Moleko (OK Furniture)", sales: 1},
-    {name: "Moureen (OK Furniture)", sales: 1},
-    {name: "Muduwelo (HiFi Corp)", sales: 1},
-    {name: "Musawenkosi (HiFi Corp)", sales: 1},
-    {name: "Nhlamuhlo (HiFi Corp)", sales: 1},
-    {name: "Noloyiso (HiFi Corp)", sales: 1},
-    {name: "Nosipho (House and Home)", sales: 1},
-    {name: "Ntombifuthi (HiFi Corp)", sales: 1},
-    {name: "Obakeng (House and Home)", sales: 1},
-    {name: "Octavious (HiFi Corp)", sales: 1},
-    {name: "Palesa (OK Furniture)", sales: 1},
-    {name: "Pearl (HiFi Corp)", sales: 1},
-    {name: "Sibusiso (HiFi Corp)", sales: 1},
-    {name: "Silosini (OK Furniture)", sales: 1},
-    {name: "Sonwabile (House and Home)", sales: 1},
-    {name: "Winnie (House and Home)", sales: 1}
+    { name: 'Olgar (HiFi Corp)', sales: 7 },
+    { name: 'Oryan (HiFi Corp)', sales: 2 },
+    { name: 'Nokubonga (OK Furniture)', sales: 2 },
+    { name: 'Phemelo (OK Furniture)', sales: 2 },
+    { name: 'Sibusiso (HiFi Corp)', sales: 1 },
+    { name: 'Octavious (HiFi Corp)', sales: 1 },
+    { name: 'Kevin (HiFi Corp)', sales: 1 },
+    { name: 'Pride (HiFi Corp)', sales: 1 },
+    { name: 'Lebo (HiFi Corp)', sales: 1 },
+    { name: 'Lethu (HiFi Corp)', sales: 1 },
+    { name: 'Lungelo (HiFi Corp)', sales: 1 },
+    { name: 'Pearl (HiFi Corp)', sales: 1 },
+    { name: 'Nhlamuhlo (HiFi Corp)', sales: 1 },
+    { name: 'Ntombifuthi (HiFi Corp)', sales: 1 },
+    { name: 'Muduwelo (HiFi Corp)', sales: 1 },
+    { name: 'Noloyiso (HiFi Corp)', sales: 1 },
+    { name: 'Antino (HiFi Corp)', sales: 1 },
+    { name: 'Musawenkosi (HiFi Corp)', sales: 1 },
+    { name: 'Refilwe (OK Furniture)', sales: 1 },
+    { name: 'Kilani (OK Furniture)', sales: 1 },
+    { name: 'Moleko (OK Furniture)', sales: 1 },
+    { name: 'Godfrey (OK Furniture)', sales: 1 },
+    { name: 'Karabo (OK Furniture)', sales: 1 },
+    { name: 'Palesa (OK Furniture)', sales: 1 },
+    { name: 'Amanda (OK Furniture)', sales: 1 },
+    { name: 'Silosini (OK Furniture)', sales: 1 },
+    { name: 'Moureen (OK Furniture)', sales: 1 },
+    { name: 'Winnie (House and Home)', sales: 1 },
+    { name: 'Andre (House and Home)', sales: 1 },
+    { name: 'Sonwabile (House and Home)', sales: 1 },
+    { name: 'Obakeng (House and Home)', sales: 1 },
+    { name: 'Nosipho (House and Home)', sales: 1 },
+    { name: 'Angelo (House and Home)', sales: 1 },
+    { name: 'Azwi (House and Home)', sales: 1 },
+    { name: 'Julian (Hisense Canal Walk)', sales: 1 }
   ]
 };
 
 let D;
-const editMode = false;
+const editMode = false; // read-only build
 
 function load() {
   D = JSON.parse(JSON.stringify(DEFAULT));
@@ -712,7 +733,7 @@ function renderModelStores() {
 }
 function renderNote() {
   document.getElementById('campaignNote').innerHTML =
-    `ℹ️ Campaign live ${esc(D.liveDates)} &nbsp;·&nbsp; Coupons expire ${esc(D.expiry)} &nbsp;·&nbsp; Redemptions: Checkers/Shoprite powder confirmed to 5 Nov; liquid and Pick n Pay as at 28 Oct, awaiting updated retailer reports.`;
+    `ℹ️ Campaign live ${esc(D.liveDates)} &nbsp;·&nbsp; Coupons expire ${esc(D.expiry)} &nbsp;·&nbsp; Redemptions: Checkers/Shoprite powder confirmed to 11 Nov; liquid and Pick n Pay as at 28 Oct, awaiting updated retailer reports.`;
 }
 
 // ── Charts ────────────────────────────────────────────────────────────────
@@ -852,3 +873,5 @@ renderAll();
 </script>
 </body>
 </html>
+
+</body></html>
