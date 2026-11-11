@@ -172,7 +172,7 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
         <thead><tr><th>Week</th><th>Dates</th><th class="n">New registrations</th><th class="n">Total registrations</th><th class="n">Coupons issued</th><th class="n">Redemptions</th><th class="n">Total redemptions</th><th class="n">Redemption rate</th></tr></thead>
         <tbody id="weekBody"></tbody>
       </table></div>
-      <p class="note">Weeks run Wednesday to Tuesday from launch on 23.September.2026. Redemption rate is total redemptions to date divided by total coupons issued to date. Test entries are included in registrations and counted as invalid. Redemptions are as at 28 Oct for liquid and Pick n Pay until updated retailer reports arrive, so the redemption rate is understated for recent weeks.</p>
+      <p class="note">Weeks run Wednesday to Tuesday from launch on 23.September.2026. Coupons issued match valid registrations each week. Redemption rate is total redemptions to date divided by total coupons issued to date. Test entries are included in registrations and counted as invalid. Redemptions are as at 28 Oct for liquid and Pick n Pay until updated retailer reports arrive, so the redemption rate is understated for recent weeks.</p>
     </div>
     <div class="card" style="margin-bottom:14px">
       <h3>New registrations and redemption rate per week</h3>
@@ -274,7 +274,8 @@ footer{text-align:center;font-size:11.5px;color:var(--text3);margin-top:3rem;pad
 // Valid = tagged Coupon sent (76). Under review = HIRSCH INVOICE, Valid til slip awaiting coupon, untagged (30)
 // Invalid = 44 rejected tags + 10 tests. Model / preferred retailer backfilled from earlier exports where the cleaned file lost them
 // 13 valid entries (22 Oct to 8 Nov) have no model or preferred retailer captured: left out of coupons issued and model tables until captured
-// Coupons issued: valid entries by preferred retailer, Dis-Chem excluded
+// Coupons issued: always equals valid registrations (76). Retailer cards show coupons linked to Checkers/Shoprite or Pick n Pay (58); 5 Dis-Chem and 13 not captured shown as not linked
+// Weekly issued = valid registrations per registration week
 // Redemptions: Checkers/Shoprite powder 2 confirmed to 11 Nov (Monavoni 20 Oct, SO Mogwase 8 Nov; Blubird Melrose pre launch test excluded). Liquid 8 and Pick n Pay powder 3 as at 28 Oct, no newer reports supplied
 const DEFAULT = {
   updated: '10.November.2026',
@@ -325,13 +326,13 @@ const DEFAULT = {
   // Dis-Chem removed from the report at Berelo's request
   // Weekly summary (weeks start Wednesday 23 Sep). Registrations include tests. Issued counted by registration week of valid entries.
   weeks: [
-    { name: 'Week 1', dates: '23.September to 29.September', reg: 10, issued: 3,  redeemed: 0 },
-    { name: 'Week 2', dates: '30.September to 6.October',    reg: 30, issued: 12, redeemed: 2 },
+    { name: 'Week 1', dates: '23.September to 29.September', reg: 10, issued: 4,  redeemed: 0 },
+    { name: 'Week 2', dates: '30.September to 6.October',    reg: 30, issued: 13, redeemed: 2 },
     { name: 'Week 3', dates: '7.October to 13.October',      reg: 18, issued: 9,  redeemed: 3 },
-    { name: 'Week 4', dates: '14.October to 20.October',     reg: 27, issued: 7,  redeemed: 5 },
-    { name: 'Week 5', dates: '21.October to 27.October',     reg: 26, issued: 9,  redeemed: 2 },
-    { name: 'Week 6', dates: '28.October to 3.November',     reg: 30, issued: 12, redeemed: 0 },
-    { name: 'Week 7', dates: '4.November to 10.November',    reg: 19, issued: 6,  redeemed: 1, current: true }
+    { name: 'Week 4', dates: '14.October to 20.October',     reg: 27, issued: 8,  redeemed: 5 },
+    { name: 'Week 5', dates: '21.October to 27.October',     reg: 26, issued: 13, redeemed: 2 },
+    { name: 'Week 6', dates: '28.October to 3.November',     reg: 30, issued: 17, redeemed: 0 },
+    { name: 'Week 7', dates: '4.November to 10.November',    reg: 19, issued: 12, redeemed: 1, current: true }
   ],
   // Valid machines per store by type
   stores: [
@@ -417,14 +418,17 @@ const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':
 const int = v => Math.max(0, parseInt(v) || 0);
 
 // ── Derived values ────────────────────────────────────────────────────────
+// Coupons issued always equals valid registrations: every valid entry is sent a coupon.
+// Retailer cards show the coupons that can be linked to Checkers/Shoprite or Pick n Pay; the rest are shown as not linked.
 function totals() {
-  let issued = 0, redeemed = 0, issuedReported = 0, anyReported = false;
+  let linked = 0, redeemed = 0, anyReported = false;
   D.coupons.forEach(g => g.rows.forEach(r => {
-    issued += r.i;
-    if (r.r !== null && r.r !== undefined) { anyReported = true; redeemed += r.r; issuedReported += r.i; }
+    linked += r.i;
+    if (r.r !== null && r.r !== undefined) { anyReported = true; redeemed += r.r; }
   }));
-  return { issued, redeemed: anyReported ? redeemed : null,
-    rate: anyReported && issuedReported ? Math.round(redeemed / issuedReported * 100) : null };
+  const issued = D.validReg;
+  return { issued, linked, unlinked: Math.max(0, issued - linked), redeemed: anyReported ? redeemed : null,
+    rate: anyReported && issued ? Math.round(redeemed / issued * 100) : null };
 }
 function invalidCount() { return Math.max(0, D.totalReg - D.validReg - (D.reviewReg || 0)); }
 function rateInfo(i, r) {
@@ -474,7 +478,7 @@ function renderMetrics() {
   document.getElementById('metrics').innerHTML =
     box('Total registrations', 'totalReg', D.totalReg, '', 'All entries', true) +
     box('Valid registrations', 'validReg', D.validReg, 'green', validSub(), true) +
-    box('Coupons issued', '', t.issued, '', 'Across ' + couponRetailers + ' retailers', false) +
+    box('Coupons issued', '', t.issued, '', 'One per valid registration', false) +
     box('Coupons redeemed', '', t.redeemed, '', 'Of ' + t.issued + ' issued', false) +
     box('Washing machine retailers', 'activeRetailers', D.activeRetailers, '', 'Where consumers bought their washing machines', true) +
     box('Redemption rate', '', t.rate === null ? null : t.rate + '%', 'amber', 'Auto-calculated', false);
@@ -570,6 +574,7 @@ function renderCoupons() {
       }).join('')}
       ${editMode ? `<button class="btn add-row" onclick="addCouponRow(${gi})">＋ Add coupon</button>` : ''}
     </div>`).join('') +
+    (totals().unlinked ? `<p class="note" id="unlinkedNote">${totals().unlinked} of the ${D.validReg} coupons issued are not shown above: consumers who chose Dis-Chem, or entries where the coupon retailer was not captured in the export. Total coupons issued always matches valid registrations.</p>` : '') +
     (editMode ? `<button class="btn add-row" onclick="D.coupons.push({retailer:'New retailer',rows:[{label:'Auto Powder 2× 2kg',i:0,r:null},{label:'Auto Liquid 2× 1.5L',i:0,r:null}]});renderCoupons();refreshDerived()">＋ Add retailer</button>` : '');
 }
 function addCouponRow(gi) { D.coupons[gi].rows.push({ label: 'New coupon', i: 0, r: null }); renderCoupons(); }
@@ -851,6 +856,8 @@ function refreshDerived() {
     tiles[3].querySelector('.mval').textContent = t.redeemed === null ? 'TBC' : t.redeemed;
     tiles[3].querySelector('.msub').textContent = 'Of ' + t.issued + ' issued';
     tiles[5].querySelector('.mval').textContent = t.rate === null ? 'TBC' : t.rate + '%';
+    const un = document.getElementById('unlinkedNote');
+    if (un) un.textContent = t.unlinked + ' of the ' + D.validReg + ' coupons issued are not shown above: consumers who chose Dis-Chem, or entries where the coupon retailer was not captured in the export. Total coupons issued always matches valid registrations.';
   }
   updateCharts();
 }
